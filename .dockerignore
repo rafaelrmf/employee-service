@@ -1,0 +1,10 @@
+target/
+.git/
+.github/
+.idea/
+*.iml
+logs/
+docs/
+postman/
+.env
+README.md

@@ -8,6 +8,8 @@ import com.invex.employeeservice.exception.EmployeeNotFoundException;
 import com.invex.employeeservice.exception.InvalidRequestException;
 import com.invex.employeeservice.mapper.EmployeeMapper;
 import com.invex.employeeservice.repository.EmployeeRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeMapper employeeMapper;
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(EmployeeServiceImpl.class);
 
     public EmployeeServiceImpl(EmployeeRepository employeeRepository,
                                EmployeeMapper employeeMapper) {
@@ -58,30 +63,23 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<EmployeeResponse> createAll(List<EmployeeCreateRequest> requests) {
 
         if (requests == null || requests.isEmpty()) {
-            throw new InvalidRequestException(
-                    "At least one employee is required"
-            );
+            throw new InvalidRequestException("At least one employee is required");
         }
 
-        requests.forEach(request ->
-                validateBirthDate(request.getBirthDate())
-        );
+        LOGGER.info("Creating employees. count={}", requests.size());
 
         List<Employee> employees = requests.stream()
                 .map(employeeMapper::toEntity)
                 .collect(Collectors.toList());
 
-        return employeeRepository.saveAll(employees)
+        List<EmployeeResponse> responses = employeeRepository.saveAll(employees)
                 .stream()
                 .map(employeeMapper::toResponse)
                 .collect(Collectors.toList());
-    }
 
-    private void validateBirthDate(LocalDate birthDate) {
+        LOGGER.info("Employees created successfully. count={}", responses.size());
 
-        if (birthDate != null && !birthDate.isBefore(LocalDate.now())) {
-            throw new InvalidRequestException("Birth date must be in the past");
-        }
+        return responses;
     }
 
     @Override
@@ -90,11 +88,15 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         validateUpdateRequest(request);
 
+        LOGGER.info("Updating employee. id={}", id);
+
         Employee employee = findEmployeeById(id);
 
         employeeMapper.updateEntity(request, employee);
 
         Employee updatedEmployee = employeeRepository.save(employee);
+
+        LOGGER.info("Employee updated successfully. id={}", id);
 
         return employeeMapper.toResponse(updatedEmployee);
     }
@@ -103,9 +105,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public void delete(Long id) {
 
+        LOGGER.info("Deleting employee. id={}", id);
+
         Employee employee = findEmployeeById(id);
 
         employeeRepository.delete(employee);
+
+        LOGGER.info("Employee deleted successfully. id={}", id);
     }
 
     @Override

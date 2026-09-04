@@ -2,7 +2,7 @@
 
 REST API developed as part of a Senior Java Developer technical assessment.
 
-The service provides employee management operations using Spring Boot, Spring Data JPA, Hibernate, MySQL, Bean Validation, OpenAPI/Swagger, JUnit 5, Mockito, Actuator, and GitHub Actions.
+The service provides employee management operations using Spring Boot, Spring Data JPA, Hibernate, MySQL, Bean Validation, OpenAPI/Swagger, JUnit 5, Mockito, Actuator, GitHub Actions, Docker and Docker Compose.
 
 ## Features
 
@@ -21,6 +21,8 @@ The service provides employee management operations using Spring Boot, Spring Da
 - Unit and MVC tests.
 - Continuous Integration with GitHub Actions.
 - Postman collection with positive and negative scenarios.
+- Docker multi-stage build.
+- Docker Compose environment with MySQL.
 
 ## Technology Stack
 
@@ -41,6 +43,8 @@ The service provides employee management operations using Spring Boot, Spring Da
 | Mockito | Dependency mocking |
 | MockMvc | Controller testing |
 | GitHub Actions | Continuous Integration |
+| Docker | Application containerization |
+| Docker Compose | Application + MySQL orchestration |
 
 ## Architecture
 
@@ -566,6 +570,174 @@ Base variable:
 baseUrl = http://localhost:8080
 ```
 
+
+## Docker
+
+The application can be executed together with MySQL using Docker Compose.
+
+Docker-related files:
+
+```text
+Dockerfile
+.dockerignore
+docker-compose.yml
+.env.example
+```
+
+### Docker Architecture
+
+```text
+Host
+ |
+ |-- localhost:8080
+ |       |
+ |       v
+ |   employee-service
+ |       |
+ |       | jdbc:mysql://mysql:3306/employee_db
+ |       v
+ |   employee-mysql
+ |
+ `-- localhost:3307 -> MySQL container port 3306
+```
+
+The Spring Boot container connects to MySQL using the Docker Compose service name:
+
+```text
+mysql
+```
+
+instead of `localhost`.
+
+### Docker Environment Variables
+
+Create a local `.env` file based on:
+
+```text
+.env.example
+```
+
+Example:
+
+```env
+MYSQL_ROOT_PASSWORD=change_me
+```
+
+The `.env` file is ignored by Git and must not be committed.
+
+### Build and Start
+
+Run:
+
+```bash
+docker compose up --build
+```
+
+Docker Compose starts:
+
+```text
+employee-service -> http://localhost:8080
+mysql            -> localhost:3307
+```
+
+The MySQL container is exposed through host port `3307` to avoid conflicts with a local MySQL installation using port `3306`.
+
+### MySQL Health Check
+
+The Compose configuration includes a MySQL health check.
+
+The application container starts only after MySQL reports a healthy state.
+
+Verify the containers:
+
+```bash
+docker compose ps
+```
+
+Expected state:
+
+```text
+employee-mysql      Up (healthy)
+employee-service    Up
+```
+
+### Verify the Containerized Application
+
+Health check:
+
+```text
+http://localhost:8080/actuator/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "UP"
+}
+```
+
+Swagger:
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+API:
+
+```text
+http://localhost:8080/employees
+```
+
+The Docker environment has been successfully validated with the Spring Boot application connected to the MySQL container.
+
+### Data Persistence
+
+MySQL data is persisted using the named volume:
+
+```text
+employee_mysql_data
+```
+
+Stop the containers without deleting the persisted database:
+
+```bash
+docker compose down
+```
+
+To explicitly remove containers and the persisted database volume:
+
+```bash
+docker compose down -v
+```
+
+### Docker Build Strategy
+
+The `Dockerfile` uses a multi-stage build.
+
+Build stage:
+
+```text
+Maven + JDK 17
+      |
+      v
+Compile + Test + Package
+      |
+      v
+Application JAR
+```
+
+Runtime stage:
+
+```text
+JRE 17
+  |
+  v
+app.jar
+```
+
+This keeps Maven and build tooling out of the final runtime image.
+
 ## Continuous Integration
 
 GitHub Actions configuration:
@@ -645,7 +817,8 @@ docs/evidence/
 |-- 04-not-found-404.png
 |-- 05-unit-tests.png
 |-- 06-github-actions.png
-`-- 07-actuator-health.png
+|-- 07-actuator-health.png
+`-- 08-docker-compose.png
 ```
 
 ## Security Considerations
@@ -661,6 +834,8 @@ The current implementation includes basic secure-development practices:
 - GitHub Actions uses minimum read permissions.
 - Personal employee data is not unnecessarily written to application logs.
 - Request validation is performed before business processing.
+- Docker credentials are externalized through environment variables.
+- `.env` is ignored by Git and `.env.example` documents required configuration without exposing secrets.
 
 Spring Security was intentionally left as a future improvement because it is an optional requirement and the implementation prioritizes the functional API, validation, automated tests, documentation, and CI pipeline.
 
@@ -670,25 +845,27 @@ Given additional time, the following improvements would be considered:
 
 1. Add Spring Security with JWT or OAuth 2.0 / OpenID Connect.
 2. Add Flyway or Liquibase for database migrations.
-3. Add Docker and Docker Compose.
-4. Add repository integration tests using H2 or Testcontainers.
-5. Add pagination and sorting to `GET /employees`.
-6. Add API versioning, for example `/api/v1/employees`.
-7. Add correlation IDs for request tracing.
-8. Add structured logging.
-9. Add metrics and distributed observability.
-10. Add database indexes based on production search patterns.
-11. Define a business-approved gender catalog if required.
-12. Use `PATCH` / JSON Merge Patch for full partial-update semantics.
-13. Add duplicate employee business rules if required.
-14. Add an automated security/dependency scanning stage to CI.
-15. Configure Continuous Deployment once a target environment is defined.
+3. Add repository integration tests using H2, Testcontainers or a dedicated test database.
+4. Add pagination and sorting to `GET /employees`.
+5. Add API versioning, for example `/api/v1/employees`.
+6. Add correlation IDs for request tracing.
+7. Add structured logging and centralized log aggregation.
+8. Add metrics and distributed observability.
+9. Add database indexes based on production search patterns.
+10. Define a business-approved gender catalog if required.
+11. Use `PATCH` / JSON Merge Patch for full partial-update semantics.
+12. Add duplicate employee business rules if required.
+13. Add automated dependency and container image security scanning to CI.
+14. Use a non-root database user with restricted privileges for production.
+15. Add production-ready container limits and orchestration configuration.
+16. Configure Continuous Deployment once a target environment is defined.
 
 ## Notes
 
 - All source code is written in English.
 - The project was implemented using Java 17 and Spring Boot 2.7.x.
 - No frontend/UI is included because the assessment evaluates the backend service.
+- Docker Compose execution with MySQL has been successfully validated.
 
 ## Author
 

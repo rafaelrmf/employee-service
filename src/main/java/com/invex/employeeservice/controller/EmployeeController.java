@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/employees")
+@Validated
 @Tag(
         name = "Employees",
         description = "Operations for employee management"
@@ -50,7 +52,8 @@ public class EmployeeController {
     public ResponseEntity<List<EmployeeResponse>> create(
             @Valid @RequestBody List<@Valid EmployeeCreateRequest> requests) {
 
-        List<EmployeeResponse> employees = employeeService.createAll(requests);
+        List<EmployeeResponse> employees =
+                employeeService.createAll(requests);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

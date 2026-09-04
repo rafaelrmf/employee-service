@@ -16,13 +16,13 @@ public class EmployeeMapper {
 
         Employee employee = new Employee();
 
-        employee.setFirstName(request.getFirstName());
-        employee.setMiddleName(request.getMiddleName());
-        employee.setPaternalLastName(request.getPaternalLastName());
-        employee.setMaternalLastName(request.getMaternalLastName());
-        employee.setGender(request.getGender());
+        employee.setFirstName(normalize(request.getFirstName()));
+        employee.setMiddleName(normalize(request.getMiddleName()));
+        employee.setPaternalLastName(normalize(request.getPaternalLastName()));
+        employee.setMaternalLastName(normalize(request.getMaternalLastName()));
+        employee.setGender(normalize(request.getGender()));
         employee.setBirthDate(request.getBirthDate());
-        employee.setPosition(request.getPosition());
+        employee.setPosition(normalize(request.getPosition()));
 
         employee.setActive(request.getActive() != null ? request.getActive() : Boolean.TRUE);
 
@@ -51,23 +51,23 @@ public class EmployeeMapper {
     public void updateEntity(EmployeeUpdateRequest request, Employee employee) {
 
         if (request.getFirstName() != null) {
-            employee.setFirstName(request.getFirstName());
+            employee.setFirstName(normalize(request.getFirstName()));
         }
 
         if (request.getMiddleName() != null) {
-            employee.setMiddleName(request.getMiddleName());
+            employee.setMiddleName(normalize(request.getMiddleName()));
         }
 
         if (request.getPaternalLastName() != null) {
-            employee.setPaternalLastName(request.getPaternalLastName());
+            employee.setPaternalLastName(normalize(request.getPaternalLastName()));
         }
 
         if (request.getMaternalLastName() != null) {
-            employee.setMaternalLastName(request.getMaternalLastName());
+            employee.setMaternalLastName(normalize(request.getMaternalLastName()));
         }
 
         if (request.getGender() != null) {
-            employee.setGender(request.getGender());
+            employee.setGender(normalize(request.getGender()));
         }
 
         if (request.getBirthDate() != null) {
@@ -75,7 +75,7 @@ public class EmployeeMapper {
         }
 
         if (request.getPosition() != null) {
-            employee.setPosition(request.getPosition());
+            employee.setPosition(normalize(request.getPosition()));
         }
 
         if (request.getActive() != null) {
@@ -85,5 +85,12 @@ public class EmployeeMapper {
 
     private int calculateAge(LocalDate birthDate) {
         return Period.between(birthDate, LocalDate.now()).getYears();
+    }
+
+    private String normalize(String value) {
+
+        return value == null
+                ? null
+                : value.trim();
     }
 }

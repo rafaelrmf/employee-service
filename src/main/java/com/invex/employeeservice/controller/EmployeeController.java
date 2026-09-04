@@ -39,7 +39,7 @@ public class EmployeeController {
 
     @PostMapping
     public ResponseEntity<List<EmployeeResponse>> create(
-            @Valid @RequestBody List<EmployeeCreateRequest> requests) {
+            @Valid @RequestBody List<@Valid EmployeeCreateRequest> requests) {
 
         List<EmployeeResponse> employees = employeeService.createAll(requests);
 

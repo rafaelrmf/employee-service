@@ -6,6 +6,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 public class EmployeeCreateRequest {
@@ -15,6 +16,7 @@ public class EmployeeCreateRequest {
     private String firstName;
 
     @Size(max = 100, message = "Middle name must not exceed 100 characters")
+    @Pattern(regexp = ".*\\S.*", message = "Middle name must not be blank")
     private String middleName;
 
     @NotBlank(message = "Paternal last name is required")
@@ -22,6 +24,7 @@ public class EmployeeCreateRequest {
     private String paternalLastName;
 
     @Size(max = 100, message = "Maternal last name must not exceed 100 characters")
+    @Pattern(regexp = ".*\\S.*", message = "Maternal last name must not be blank")
     private String maternalLastName;
 
     @NotBlank(message = "Gender is required")

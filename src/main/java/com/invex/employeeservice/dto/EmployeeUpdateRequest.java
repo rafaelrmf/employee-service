@@ -9,7 +9,6 @@ import java.time.LocalDate;
 
 public class EmployeeUpdateRequest {
 
-    @NotBlank(message = "First name is required")
     @Size(max = 100, message = "First name must not exceed 100 characters")
     private String firstName;
 

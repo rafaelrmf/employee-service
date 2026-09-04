@@ -1,0 +1,577 @@
+{
+  "info": {
+    "_postman_id": "d85990d0-472d-485a-ba71-93c0c699c9ee",
+    "name": "Employee Service",
+    "description": "Postman collection for the Employee Service technical assessment. Covers CRUD, partial name search, bulk creation, validation errors, not-found handling, and health check.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "45937581"
+  },
+  "item": [
+    {
+      "name": "Employees - Happy Path",
+      "item": [
+        {
+          "name": "GET - All Employees",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response is an array', function () {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST - Create One Employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Employee was created', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an('array').that.is.not.empty;",
+                  "    pm.expect(body[0]).to.have.property('id');",
+                  "    pm.expect(body[0]).to.have.property('age');",
+                  "    pm.expect(body[0]).to.have.property('createdAt');",
+                  "    pm.collectionVariables.set('employeeId', body[0].id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"firstName\": \"Juan\",\n    \"middleName\": \"Carlos\",\n    \"paternalLastName\": \"Macedo\",\n    \"maternalLastName\": \"Mora\",\n    \"gender\": \"MALE\",\n    \"birthDate\": \"15-04-1995\",\n    \"position\": \"Java Developer\",\n    \"active\": true\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET - Employee By ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returned employee matches requested ID', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(String(body.id)).to.eql(String(pm.collectionVariables.get('employeeId')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST - Create Multiple Employees",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('Two employees were created', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an('array').with.lengthOf(2);",
+                  "    pm.collectionVariables.set('deleteEmployeeId', body[1].id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"firstName\": \"Ana\",\n    \"middleName\": null,\n    \"paternalLastName\": \"Lopez\",\n    \"maternalLastName\": \"Garcia\",\n    \"gender\": \"FEMALE\",\n    \"birthDate\": \"20-08-1998\",\n    \"position\": \"Business Analyst\",\n    \"active\": true\n  },\n  {\n    \"firstName\": \"Pedro\",\n    \"middleName\": \"Antonio\",\n    \"paternalLastName\": \"Martinez\",\n    \"maternalLastName\": \"Sanchez\",\n    \"gender\": \"MALE\",\n    \"birthDate\": \"10-02-1989\",\n    \"position\": \"Solution Architect\",\n    \"active\": true\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - Partial Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Fields were updated', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.position).to.eql('Senior Java Developer');",
+                  "    pm.expect(body.active).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"position\": \"Senior Java Developer\",\n  \"active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET - Search By Name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Search returns an array', function () {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/search?name=Juan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Juan"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE - Employee",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{deleteEmployeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{deleteEmployeeId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Validation and Error Scenarios",
+      "item": [
+        {
+          "name": "GET - Employee Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "pm.test('Error response has standard structure', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.status).to.eql(404);",
+                  "    pm.expect(body).to.have.property('message');",
+                  "    pm.expect(body).to.have.property('path');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "999999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET - Invalid ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "abc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST - Empty List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST - Invalid Required Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "pm.test('Validation errors are returned', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.message).to.eql('Request validation failed');",
+                  "    pm.expect(body).to.have.property('validationErrors');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"firstName\": \"\",\n    \"paternalLastName\": \"\",\n    \"gender\": \"\",\n    \"birthDate\": \"20-08-2035\",\n    \"position\": \"\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PUT - Empty Body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/{{employeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "{{employeeId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET - Blank Search",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/search?name=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Operations",
+      "item": [
+        {
+          "name": "GET - Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Application is UP', function () {",
+                  "    pm.expect(pm.response.json().status).to.eql('UP');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "employeeId",
+      "value": "1"
+    },
+    {
+      "key": "deleteEmployeeId",
+      "value": "3"
+    }
+  ]
+}
